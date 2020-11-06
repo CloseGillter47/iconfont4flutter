@@ -148,6 +148,12 @@ export function copyDemoFiles (output: string): Promise<void> {
   });
 }
 
+export function deleteFileAsync (uri: string) {
+  if (fs.existsSync(uri)) {
+    fs.unlinkSync(uri);
+  }
+}
+
 
 
 export default {
@@ -155,6 +161,7 @@ export default {
   readFileAsync,
   writeFileAsync,
   existsFileAsync,
+  deleteFileAsync,
   createFolderAsync,
   createFoldersAsync,
 };

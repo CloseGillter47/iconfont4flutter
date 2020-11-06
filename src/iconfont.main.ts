@@ -27,17 +27,38 @@ export default class Iconfont2Dart {
 
   /** 初始化插件配置 读取或者新增配置文件 */
   private async _initConfig () {
-    const confPath = FS.combinePath(this._workspace, this._pluginConfigFile);
-    const data = await FS.readFileAsync(confPath);
-    if (data) {
-      const config: VscodePlugins = YAML.parse(data) || {};
-      this._config = config.iconfont;
-    }
+
+    this._config = await this._readConfig();
 
     if (!this._config) {
       this._config = projectConfig;
+      const confPath = FS.combinePath(this._workspace, this._pluginConfigFile);
       await FS.writeFileAsync(confPath, YAML.stringify({ iconfont: orderObjectProps(this._config) }));
     }
+  }
+
+  private async _readConfig (): Promise<IconfontConfig | undefined> {
+    const confPath = FS.combinePath(this._workspace, this._pluginConfigFile);
+    if (! await FS.existsFileAsync(confPath)) return undefined;
+
+    const data = await FS.readFileAsync(confPath);
+
+    if (data) {
+      const config: VscodePlugins = YAML.parse(data) || {};
+      return config.iconfont;
+    }
+
+    return undefined;
+  }
+
+  private async _readFlutter (): Promise<FlutterProject | undefined> {
+    if (!await FS.existsFileAsync(this._yamlFile)) return;
+    const data = await FS.readFileAsync(this._yamlFile);
+    if (!data) return;
+
+    const _config: FlutterProject = YAML.parse(data);
+
+    return _config;
   }
 
   private async _addFontAssets (config: FlutterProject) {
@@ -75,7 +96,7 @@ export default class Iconfont2Dart {
 
   private async _updateYamlFile (config: FlutterProject, path: string) {
     const data = YAML.stringify(config);
-
+    await FS.writeFileAsync(this._yamlFile, data);
   }
 
   private async _buildDart () {
@@ -110,15 +131,17 @@ export default class Iconfont2Dart {
       .replaceAll(keyMaps.context, context);
 
 
-    const output = FS.combinePath(this._workspace, this._config?.output || '');
+    const folder = FS.combinePath(this._workspace, this._config?.output || '');
 
-    FS.createFoldersAsync(output, this._workspace);
+    FS.createFoldersAsync(folder, this._workspace);
 
     let fileName = `${this._config?.class_name || ''}.dart`;
 
-    fileName.toLowerCase();
+    fileName = fileName.toLowerCase();
 
-    await FS.writeFileAsync(FS.combinePath(output, fileName), dart);
+    const output = FS.combinePath(folder, fileName);
+
+    await FS.writeFileAsync(output, dart);
   }
 
 
@@ -127,25 +150,23 @@ export default class Iconfont2Dart {
    * 提供一个 demo 示例
    */
   public async demo () {
-    const data = await FS.readFileAsync(this._yamlFile);
-
-    if (!data) return VSC_TOAST.error(`找不到flutter项目的配置文件！👉 ${this._flutterYamlFile}`);
 
     // 读取工程依赖文件
-    const _config: FlutterProject = YAML.parse(data) || {};
+    const flutter = await this._readFlutter();
+    if (!flutter) return;
 
     // 初始化配置文件
     if (!this._config) await this._initConfig();
 
     /// 添加字体资源
-    this._addFontAssets(_config);
+    this._addFontAssets(flutter);
 
     /// 更新项目配置文件
-    this._updateYamlFile(_config, this._yamlFile);
+    this._updateYamlFile(flutter, this._yamlFile);
 
     await this._copyDemoFiles();
 
-    this._buildDart();
+    await this._buildDart();
     VSC_TOAST.message('Iconfont 转 Flutter IconData类的 demo 创建成功');
   }
 
@@ -154,7 +175,40 @@ export default class Iconfont2Dart {
    * 更新 dart 类
    */
   public async update () {
+    this._config = await this._readConfig();
+    if (!this._config) return VSC_TOAST.message('找不到配置文件，你可能要先运行一下 demo 命令来初始化一个配置');
 
+    await this._buildDart();
+    VSC_TOAST.message('Iconfont 已更新');
+  }
+
+  /**
+   * 更新项目yaml文件
+   */
+  public async updateYaml () {
+    const flutter = await this._readFlutter();
+    if (!flutter) return;
+
+    this._config = await this._readConfig();
+    if (!this._config) return VSC_TOAST.message('找不到配置文件，你可能要先运行一下 demo 命令来初始化一个配置');
+
+    await this._updateYamlFile(flutter, this._yamlFile);
+  }
+
+  /**
+   * 移除插件生成的相关文件
+   */
+  public async remove () {
+    this._config = await this._readConfig();
+    if (!this._config) return;
+
+    let fileName = `${this._config?.class_name || ''}.dart`;
+    fileName = fileName.toLowerCase();
+
+    const folder = FS.combinePath(this._workspace, this._config?.output || '');
+    const output = FS.combinePath(folder, fileName);
+
+    FS.deleteFileAsync(output);
   }
 
   /**
