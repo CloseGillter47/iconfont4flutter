@@ -14,12 +14,15 @@ String.prototype.replaceAll = String.prototype.replaceAll || function (this: str
 export default class Iconfont2Dart {
 
   constructor () {
-    this._config = undefined;
+    this._config = null;
+    this._iconfont = null;
+
     this._workspace = VSC_WS.getWorkspaceFolder();
     this._yamlFile = FS.combinePath(this._workspace, this._flutterYamlFile);
   }
 
-  private _config: IconfontConfig | undefined;
+  private _config: IconfontConfig | null;
+  private _iconfont: IconFont | null;
   private _yamlFile: string;
   private _workspace: string;
   private _flutterYamlFile: string = 'pubspec.yaml';
@@ -37,18 +40,18 @@ export default class Iconfont2Dart {
     }
   }
 
-  private async _readConfig (): Promise<IconfontConfig | undefined> {
+  private async _readConfig (): Promise<IconfontConfig | null> {
     const confPath = FS.combinePath(this._workspace, this._pluginConfigFile);
-    if (! await FS.existsFileAsync(confPath)) return undefined;
+    if (! await FS.existsFileAsync(confPath)) return null;
 
     const data = await FS.readFileAsync(confPath);
 
     if (data) {
       const config: VscodePlugins = YAML.parse(data) || {};
-      return config.iconfont;
+      return config?.iconfont || null;
     }
 
-    return undefined;
+    return null;
   }
 
   private async _readFlutter (): Promise<FlutterProject | undefined> {
@@ -61,13 +64,31 @@ export default class Iconfont2Dart {
     return _config;
   }
 
+  private async _readIconfont (): Promise<IconFont | null> {
+    const path = FS.combinePath(this._workspace, `${this._config?.assets}/${this._config?.json_name}`);
+    if (! await FS.existsFileAsync(path)) return null;
+
+    const data = await FS.readFileAsync(path);
+    let config: IconFont;
+    try {
+      config = JSON.parse(data);
+    } catch (error) {
+      VSC_TOAST.error(error);
+      return null;
+    }
+
+    return config;
+  }
+
   private async _addFontAssets (config: FlutterProject) {
+    if (!this._iconfont) return;
+
     // 初始化配置
     config.flutter = config.flutter || {};
     // 初始化字体配置
     config.flutter.fonts = config.flutter.fonts || [];
 
-    const font = config.flutter.fonts.find((f) => f.family === projectConfig.font_family);
+    const font = config.flutter.fonts.find((f) => f.family === this._iconfont?.font_family);
     const asset = `${projectConfig.assets}/${projectConfig.font_name}`;
     /// 如果已存在
     if (font) {
@@ -78,7 +99,7 @@ export default class Iconfont2Dart {
 
     } else {
       config.flutter.fonts.push({
-        family: projectConfig.font_family,
+        family: this._iconfont.font_family,
         fonts: [{ asset }],
       });
     }
@@ -100,18 +121,9 @@ export default class Iconfont2Dart {
   }
 
   private async _buildDart () {
-    const path = FS.combinePath(this._workspace, `${this._config?.assets}/${this._config?.json_name}`);
-    const data = await FS.readFileAsync(path);
-    if (!data) return VSC_TOAST.error(`找不到配置文件或者无法读取 👇 ${path}`);
+    const config = await this._readIconfont();
+    if (!config || !config.font_family || !config.glyphs) return;
 
-    let config: IconFont;
-    try {
-      config = JSON.parse(data);
-    } catch (error) {
-      return VSC_TOAST.error(error);
-    }
-
-    if (!config.font_family || !config.glyphs) return VSC_TOAST.error(`无效的配置文件 👇 ${path}`);
     const props: string[] = [];
     if (config.glyphs.length) {
       config.glyphs.forEach((glyph) => {
@@ -155,8 +167,11 @@ export default class Iconfont2Dart {
     const flutter = await this._readFlutter();
     if (!flutter) return;
 
-    // 初始化配置文件
+    // 初始化插件配置
     if (!this._config) await this._initConfig();
+
+    // 初始化字体配置
+    this._iconfont = this._iconfont || await this._readIconfont();
 
     /// 添加字体资源
     this._addFontAssets(flutter);
@@ -167,6 +182,7 @@ export default class Iconfont2Dart {
     await this._copyDemoFiles();
 
     await this._buildDart();
+
     VSC_TOAST.message('Iconfont 转 Flutter IconData类的 demo 创建成功');
   }
 

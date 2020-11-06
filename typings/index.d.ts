@@ -39,9 +39,6 @@ interface IconfontConfig {
   /** 字体配置文件名 */
   json_name: string;
 
-  /** 字体 font-family */
-  font_family: string;
-
   /** 字体资源存放位置 */
   assets: string;
 

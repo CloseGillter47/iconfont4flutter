@@ -7,8 +7,6 @@ export const projectConfig: IconfontConfig = {
 
   json_name: "iconfont.json",
 
-  font_family: "iconfont",
-
   assets: "assets/icons",
 
   class_name: "Zcons",

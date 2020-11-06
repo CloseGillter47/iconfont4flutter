@@ -2,6 +2,18 @@
 
 阿里的字体图标库自动转flutter的IconData集合工具。
 
+### 配置文件
+`.iproject.yaml` 默认配置如下
+```
+iconfont:
+  assets: assets/icons              # 字体图标资源存放路径
+  class_name: Zcons                 # 生成的Dart类的类名
+  font_name: iconfont.ttf           # 字体文件名称 (配套)
+  json_name: iconfont.json          # 字体配置文件 (配套)
+  output: lib/plugins               # 插件输出位置
+
+```yaml
+
 ## Features
 
 Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
@@ -34,4 +46,11 @@ If you have any requirements or dependencies, add a section describing those and
 
 ### 0.0.1
 
+1. 初始化一个demo示例；
+2. 更新生成的dart类；
+3. 更新flutter项目配置文件；
+4. 移除生成的 dart 文件；
 
+### 0.0.2
+
+1. 更新插件配置文件，删除重复字段；
