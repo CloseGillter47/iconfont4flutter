@@ -1,0 +1,23 @@
+{
+  "id": "2180465",
+  "name": "vscode_iconfont_demo",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "9207697",
+      "name": "love",
+      "font_class": "aixin-xian",
+      "unicode": "e64d",
+      "unicode_decimal": 58957
+    },
+    {
+      "icon_id": "579286",
+      "name": "点赞",
+      "font_class": "dianzan",
+      "unicode": "e60c",
+      "unicode_decimal": 58892
+    }
+  ]
+}
