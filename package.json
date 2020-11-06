@@ -3,6 +3,7 @@
   "displayName": "iconfont2flutter",
   "description": "parse iconfont config json to flutter iconData class",
   "version": "0.0.1",
+  "publisher": "kuroko",
   "engines": {
     "vscode": "^1.50.0"
   },
