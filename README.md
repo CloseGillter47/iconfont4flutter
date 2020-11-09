@@ -1,6 +1,11 @@
 # iconfont2flutter README
 
-阿里的字体图标库自动转flutter的IconData集合工具。
+阿里的字体图标库自动转flutter的IconData集合工具。[阿里字体库在这 https://www.iconfont.cn/](https://www.iconfont.cn/)
+默认配置下将下载好的字体文件压缩包中的 iconfont.json 以及iconfont.ttf移动到您的flutter项目下assets/icons中,然后运行iconfont update即可。
+之后会在flutter 项目的lib/plugins中生成对应的字体集合类，使用方式为
+```
+Icon(Zcons.love),
+```dart
 
 ### 配置文件
 `.iproject.yaml` 默认配置如下
@@ -42,6 +47,13 @@ If you have any requirements or dependencies, add a section describing those and
 
 ## Release Notes
 
+### 0.0.3
+
+1. 修复demo命令没有在`pubspec.yaml`下生成对应的字体资源引用
+
+### 0.0.2
+
+1. 更新插件配置文件，删除重复字段；
 
 
 ### 0.0.1
@@ -50,7 +62,3 @@ If you have any requirements or dependencies, add a section describing those and
 2. 更新生成的dart类；
 3. 更新flutter项目配置文件；
 4. 移除生成的 dart 文件；
-
-### 0.0.2
-
-1. 更新插件配置文件，删除重复字段；

@@ -170,16 +170,18 @@ export default class Iconfont2Dart {
     // 初始化插件配置
     if (!this._config) await this._initConfig();
 
+    await this._copyDemoFiles();
+
     // 初始化字体配置
-    this._iconfont = this._iconfont || await this._readIconfont();
+    if (!this._iconfont) {
+      this._iconfont = await this._readIconfont();
+    }
 
     /// 添加字体资源
-    this._addFontAssets(flutter);
+    await this._addFontAssets(flutter);
 
     /// 更新项目配置文件
     this._updateYamlFile(flutter, this._yamlFile);
-
-    await this._copyDemoFiles();
 
     await this._buildDart();
 
