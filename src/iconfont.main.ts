@@ -1,4 +1,6 @@
 import * as YAML from 'yaml';
+import { get as HttpGet, IncomingMessage } from 'http';
+import { get as HttpsGet } from 'https';
 
 import { VSC_WS, VSC_TOAST } from './vscode.plugins';
 import { projectConfig } from './template/config';
@@ -165,7 +167,7 @@ export default class Iconfont2Dart {
 
     // 读取工程依赖文件
     const flutter = await this._readFlutter();
-    if (!flutter) return;
+    if (!flutter) return VSC_TOAST.error("找不到 pubspec.yaml");
 
     // 初始化插件配置
     if (!this._config) await this._initConfig();
@@ -230,10 +232,90 @@ export default class Iconfont2Dart {
   }
 
   /**
-   * test
+   * 网络文件
    */
-  public test () {
+  public async http (): Promise<void> {
+    let uri = await VSC_TOAST.window.showInputBox({ placeHolder: 'www.iconfont.cn 链接' });
+    if (!uri) return;
 
-    orderObjectProps(projectConfig);
+    if (!/^(http|s)/.test(uri)) {
+      if (uri.startsWith('//')) {
+        uri = `https:${uri}`;
+      } else {
+        uri = `https://${uri}`;
+      }
+    }
+
+    const i = uri.lastIndexOf('.');
+    const filePrefix = uri.substring(0, i);
+    const ttf = `${filePrefix}.ttf`;
+    const json = `${filePrefix}.json`;
+
+    let ttfBuf: Buffer | undefined;
+    let jsonBuf: Buffer | undefined;
+    try {
+      [ttfBuf, jsonBuf] = await Promise.all([downloador(ttf), downloador(json)]);
+    } catch (error) { VSC_TOAST.error(error); }
+
+    if (ttfBuf && jsonBuf) {
+      this._config = await this._readConfig();
+      if (!this._config) return VSC_TOAST.message('找不到配置文件，你可能要先运行一下 demo 命令来初始化一个配置');
+      let output: string = FS.combinePath(this._workspace, this._config?.assets || '');
+
+      /// 创建资源文件夹
+      FS.createFoldersAsync(output, this._workspace);
+      const ttfpath = FS.combinePath(output, this._config.font_name);
+      const jsonpath = FS.combinePath(output, this._config.json_name);
+
+      await Promise.all([FS.deleteFile(ttfpath), FS.deleteFile(jsonpath)]);
+
+      await FS.writeFileAsync(ttfpath, ttfBuf);
+      await FS.writeFileAsync(jsonpath, jsonBuf);
+
+      VSC_TOAST.message("下载完毕，现在开始更新...");
+
+      await this.update();
+    }
   }
+
+}
+
+
+export function downloador (uri: string): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    if (!uri) reject();
+
+    const handler = (res: IncomingMessage) => {
+      let current = 0;
+      const totalSize = res.headers["content-length"];
+      let buffer: Buffer = Buffer.from([]);
+
+      res.on("data", (chunk) => {
+        if (chunk instanceof Buffer) {
+          current += chunk.length;
+          buffer = Buffer.concat([buffer, chunk], current);
+        }
+      });
+
+      res.on("end", () => {
+
+      });
+
+      res.on("close", () => {
+        resolve(buffer);
+      });
+
+      res.on("error", (err) => {
+        reject(err);
+      });
+    };
+
+    if (uri.startsWith('https')) {
+      HttpsGet(uri, handler);
+    } else if (uri.startsWith('http')) {
+      HttpGet(uri, handler);
+    } else {
+      reject(Error("无效url"));
+    }
+  });
 }

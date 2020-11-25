@@ -15,6 +15,12 @@ export function activate (context: vscode.ExtensionContext) {
     iconfont.update();
   }));
 
+  /** 注册 network 命令 */
+  context.subscriptions.push(vscode.commands.registerCommand('iconfont2IconData.network', () => {
+    const iconfont = new Iconfont2Dart();
+    iconfont.http();
+  }));
+
   /** 注册 updateYaml 命令 */
   context.subscriptions.push(vscode.commands.registerCommand('iconfont2IconData.updateYaml', () => {
     const iconfont = new Iconfont2Dart();

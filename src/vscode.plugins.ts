@@ -28,4 +28,5 @@ export function error (message: string) {
 export const VSC_TOAST = {
   error,
   message,
+  window,
 };

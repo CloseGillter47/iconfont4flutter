@@ -151,12 +151,27 @@ export function copyDemoFiles (output: string): Promise<void> {
 export function deleteFileAsync (uri: string) {
   if (fs.existsSync(uri)) {
     fs.unlinkSync(uri);
+    fs.unlink(uri, (err) => {
+
+    });
   }
+}
+
+export function deleteFile (uri: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (!fs.existsSync(uri)) resolve();
+    fs.unlink(uri, (err) => {
+      if (err) return reject(err);
+      resolve();
+    });
+  });
+
 }
 
 
 
 export default {
+  deleteFile,
   combinePath,
   readFileAsync,
   writeFileAsync,

@@ -2,7 +2,7 @@
   "name": "iconfont2flutter",
   "displayName": "iconfont2flutter",
   "description": "parse iconfont config json to flutter iconData class",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "publisher": "kuroko",
   "engines": {
     "vscode": "^1.50.0"
@@ -13,6 +13,7 @@
   "activationEvents": [
     "onCommand:iconfont2IconData.demo",
     "onCommand:iconfont2IconData.update",
+    "onCommand:iconfont2IconData.network",
     "onCommand:iconfont2IconData.updateYaml",
     "onCommand:iconfont2IconData.remove"
   ],
@@ -26,6 +27,10 @@
       {
         "command": "iconfont2IconData.update",
         "title": "iconfont update"
+      },
+      {
+        "command": "iconfont2IconData.network",
+        "title": "iconfont update from network"
       },
       {
         "command": "iconfont2IconData.updateYaml",
