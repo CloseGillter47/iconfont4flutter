@@ -59,7 +59,11 @@ If you have any requirements or dependencies, add a section describing those and
 
 ## Release Notes
 
-### 0.0.4
+### 0.0.6
+
+1. 生成的代码加强代码检测
+
+### 0.0.5
 
 1. 新增network命令，支持自动下载网络资源
 

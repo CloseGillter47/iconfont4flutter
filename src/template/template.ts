@@ -14,7 +14,7 @@ class %CLASS_NAME {
 }
 `;
 
-export const DART_TEMPLATE_PROPS = `  /// %MASK\r\n  static const IconData %PROP = IconData(0x%CODE, fontFamily: "%FONT");`;
+export const DART_TEMPLATE_PROPS = `  /// %MASK\r\n  static const IconData %PROP = IconData(0x%CODE, fontFamily: '%FONT');`;
 
 export const keyMaps = {
   clasz: '%CLASS_NAME',

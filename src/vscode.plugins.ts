@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-const { workspace, window } = vscode;
+const { workspace, window, ProgressLocation } = vscode;
 
 
 export function getWorkspaceFolder (): string {
@@ -23,6 +23,12 @@ export function message (message: string) {
 
 export function error (message: string) {
   window.showErrorMessage(message ?? '');
+}
+
+export function loading<R> (title: string): Thenable<R> {
+  return window.withProgress<R>({ location: ProgressLocation.Notification, cancellable: false, title }, (task, token): Promise<R> => {
+    task.report({ message: '' });
+  });
 }
 
 export const VSC_TOAST = {
