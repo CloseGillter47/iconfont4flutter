@@ -59,6 +59,8 @@ If you have any requirements or dependencies, add a section describing those and
 
 ## Release Notes
 
+### 0.0.7
+1. 优化vscode提示语，增加loading
 ### 0.0.6
 
 1. 生成的代码加强代码检测

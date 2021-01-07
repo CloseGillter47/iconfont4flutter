@@ -198,8 +198,15 @@ export default class Iconfont2Dart {
     this._config = await this._readConfig();
     if (!this._config) return VSC_TOAST.message('找不到配置文件，你可能要先运行一下 demo 命令来初始化一个配置');
 
-    await this._buildDart();
-    VSC_TOAST.message('Iconfont 已更新');
+    await VSC_TOAST.loading({
+      title: '更新中...',
+      successTip: 'Iconfont 已更新',
+      failTip: 'Iconfont 更新失败',
+      method: async () => {
+        await this._buildDart();
+        return true;
+      },
+    });
   }
 
   /**
@@ -253,9 +260,17 @@ export default class Iconfont2Dart {
 
     let ttfBuf: Buffer | undefined;
     let jsonBuf: Buffer | undefined;
-    try {
-      [ttfBuf, jsonBuf] = await Promise.all([downloador(ttf), downloador(json)]);
-    } catch (error) { VSC_TOAST.error(error); }
+
+    await VSC_TOAST.loading({
+      title: '开始下载字体资源',
+      successTip: '下载完成',
+      failTip: '下载失败',
+      method: async () => {
+        [ttfBuf, jsonBuf] = await Promise.all([downloador(ttf), downloador(json)]);
+        if (!ttfBuf || !jsonBuf) return false;
+        return true;
+      },
+    });
 
     if (ttfBuf && jsonBuf) {
       this._config = await this._readConfig();
@@ -271,8 +286,6 @@ export default class Iconfont2Dart {
 
       await FS.writeFileAsync(ttfpath, ttfBuf);
       await FS.writeFileAsync(jsonpath, jsonBuf);
-
-      VSC_TOAST.message("下载完毕，现在开始更新...");
 
       await this.update();
     }

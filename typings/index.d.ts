@@ -72,6 +72,15 @@ interface IconGlyph {
   unicode_decimal: number;
 }
 
+type asyncFunction<T> = () => Promise<T>;
+
+type loadingOption = {
+  title: string;
+  method: asyncFunction<boolean>;
+  failTip?: string;
+  successTip?: string;
+};
+
 interface String {
   replaceAll (searchValue: string, replaceValue: string): string;
 }
